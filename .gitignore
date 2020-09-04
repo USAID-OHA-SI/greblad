@@ -3,6 +3,7 @@
 .RData
 .Ruserdata
 
+*.pptx
 #nothing from these folders
 GIS/*
 Images/*
