@@ -32,7 +32,7 @@ library(ICPIutilities)
       filter(indicator == "PLHIV",
              standardizeddisaggregate == "Total Numerator") %>% 
       group_by(countryname, fiscal_year) %>% 
-      summarise(plhiv = sum(targets, na.rm = TRUE)) %>% 
+      summarise(plhiv_pepfar = sum(targets, na.rm = TRUE)) %>% 
       ungroup()
   
   #keep the closest year to 2019
@@ -47,7 +47,7 @@ library(ICPIutilities)
       filter(pref_year == min(pref_year)) %>% 
       ungroup() %>% 
       select(-pref_year) %>% 
-      rename(vls_pepfar_plhiv_year = fiscal_year)
+      rename(plhiv_pepfar_year = fiscal_year)
     
   #filter to necessary variables
     df_vl <- df_mer %>% 
@@ -65,7 +65,7 @@ library(ICPIutilities)
   #calc VLS - PVLS_N FY19Q4
     df_vls <- df_vl %>% 
       full_join(df_nat) %>%
-      mutate(vls_pepfar = tx_pvls / plhiv)
+      mutate(vls_pepfar = tx_pvls / plhiv_pepfar)
       
 
   #add iso code in for merging
@@ -75,6 +75,6 @@ library(ICPIutilities)
     
 # EXPORT ------------------------------------------------------------------
     
-    write_csv(df_vl, "Dataout/pepfar_vls.csv", na = "")      
+    write_csv(df_vls, "Dataout/pepfar_vls.csv", na = "")      
   
   
