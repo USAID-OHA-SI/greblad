@@ -27,8 +27,9 @@
   #make names usable  
     df_copmatrix <- clean_names(df_copmatrix)
 
-  #create planning lvl w/o supply chain and aggregate to OU x agency level
+  #create planning lvl w/o M&O and w/ + w/o supply chain; aggregate to OU x agency level
     df_copmatrix_agg <- df_copmatrix %>%
+      filter(record_type != "Management and Operations") %>% 
       mutate(total_planned_funding_sans_ghsc = case_when(str_detect(mechanism_name, "GHSC", negate = TRUE) ~ total_planned_funding)) %>% 
       group_by(operating_unit, funding_agency) %>% 
       summarise(cop20_budget = sum(total_planned_funding, na.rm = TRUE),
