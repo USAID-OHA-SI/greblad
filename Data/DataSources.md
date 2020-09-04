@@ -5,6 +5,13 @@
   - Source: https//pepfar-panorama.net
   - Date accessed: 2020-08-24
   - Method: Downloads > MER FY2020 Q3 Pre-Cleaning > MER_Structured_Datasets_OU_IM_FY18-20_20200814_v1_1.zip
+  
+- PEPFAR NAT/SUBNAT Structured Dataset
+  - Filename: MER_Structured_Datasets_NAT_SUBNAT_FY15-20_20200814_v1_1.txt
+  - Source: https//pepfar-panorama.net
+  - Date accessed: 2020-08-24
+  - Method: Downloads > MER FY2020 Q3 Pre-Cleaning > MER_Structured_Datasets_NAT_SUBNAT_FY15-20_20200814_v1_1.zip
+  
 - COP Matrix Report
   - Filename: Not public
   - Source: https://docs.google.com/spreadsheets/d/15REkQ2kNIgYR3LQ8k7WnQYmXBY4UmZpaRNwRQqI-V7I/edit#gid=1064510658
@@ -36,7 +43,7 @@
   - Method: Downloads > INFORM Risk Index 2020 > Download
   
 - Vaccinations
-  - Source: https://api.dhsprogram.com/rest/dhs/data/CH_VACS_C_BAS?f=json
-  - Date accessed
+  - Source: https://dhsprogram.com/data/Guide-to-DHS-Statistics/index.htm#t=Vaccination.htm
+  - Date accessed: 2020-09-04
   - Method: API
   

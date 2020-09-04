@@ -21,57 +21,55 @@ library(ICPIutilities)
   #read
     df_mer <- list.files(msd_fldr, "OU_IM", full.names = TRUE) %>% 
       read_rds()
+    
+    df_nat <- list.files(msd_fldr, "NAT_SUBNAT", full.names = TRUE) %>% 
+      read_rds()
 
 # MUNGE -------------------------------------------------------------------
 
+  #filter to PLHIV
+    df_nat <- df_nat %>% 
+      filter(indicator == "PLHIV",
+             standardizeddisaggregate == "Total Numerator") %>% 
+      group_by(countryname, fiscal_year) %>% 
+      summarise(plhiv = sum(targets, na.rm = TRUE)) %>% 
+      ungroup()
+  
+  #keep the closest year to 2019
+    df_nat <- df_nat %>% 
+      mutate(pref_year = case_when(fiscal_year == 2019 ~ 1, 
+                                   fiscal_year == 2020 ~ 2,
+                                   fiscal_year == 2018 ~ 3,
+                                   fiscal_year == 2021 ~ 4,
+                                   fiscal_year == 2017 ~ 5,
+                                   fiscal_year == 2016 ~ 6)) %>% 
+      group_by(countryname) %>% 
+      filter(pref_year == min(pref_year)) %>% 
+      ungroup() %>% 
+      select(-pref_year) %>% 
+      rename(vls_pepfar_plhiv_year = fiscal_year)
+    
   #filter to necessary variables
     df_vl <- df_mer %>% 
-      filter(indicator %in% c("TX_CURR", "TX_PVLS"),
-             standardizeddisaggregate %in% c("Total Numerator", "Total Denominator"))
+      filter(indicator == "TX_PVLS",
+             standardizeddisaggregate == "Total Numerator",
+             fiscal_year == 2019)
   
-  #add D to PVLS denom
+  #summarize to FY19Q4
     df_vl <- df_vl %>% 
-      mutate(indicator = ifelse(numeratordenom == "D", paste0(indicator, "_D"), indicator))
-  
-  #keep to just quarterly results to create VLC
-    df_vl <- df_vl %>% 
-      group_by(countryname, fundingagency, fiscal_year, indicator) %>% 
-      summarise(across(starts_with("qtr"), sum, na.rm = TRUE)) %>% 
-      ungroup()
-  
-  #reshape long to setup VLC calc over quarters
-    df_vl <- df_vl %>% 
-      reshape_msd(clean = TRUE) %>% 
-      select(-period_type) %>% 
-      spread(indicator, val)
-  
-  #calc prior TX_CURR for ease
-    df_vl <- df_vl %>%
-      group_by(countryname, fundingagency) %>%
-      mutate(TX_CURR_2prior = lag(TX_CURR, 2, order_by = period)) %>% 
-      ungroup()
-  
-  #calc VLC + VLS (due to Q3 issues in ZAF, need to use Q2 data)
-    df_vl <- df_vl %>% 
-      mutate(VLC = TX_PVLS_D/TX_CURR_2prior,
-             VLS = (TX_PVLS/TX_PVLS_D)*VLC) %>% 
-      filter(period == ifelse(countryname == "South Africa", "FY20Q2", max(period))) %>% 
-      select(-period)
-    
-  #ensure every ctry has each agency (for USAID filtering) and then calc PEPFAR totals
-    df_vl <- df_vl %>%
-      complete(fundingagency, nesting(countryname)) %>% 
       group_by(countryname) %>% 
-      mutate(VLC_pepfar = sum(TX_PVLS_D, na.rm = TRUE)/sum(TX_CURR_2prior, na.rm = TRUE),
-             VLS_pepfar = (sum(TX_PVLS, na.rm = TRUE)/sum(TX_PVLS_D, na.rm = TRUE)*sum(VLC, na.rm = TRUE))) %>%
+      summarise(tx_pvls = sum(qtr4, na.rm = TRUE)) %>% 
       ungroup() %>% 
-      filter(fundingagency == "USAID") %>% 
-      rename_with(~ paste0(., "_usaid"), c(VLC, VLS)) %>% 
-      rename_all(tolower) %>% 
-      select(countryname, starts_with("vls"))
+      mutate(tx_pvls_year = "FY19Q4")
+  
+  #calc VLS - PVLS_N FY19Q4
+    df_vls <- df_vl %>% 
+      full_join(df_nat) %>%
+      mutate(vls_pepfar = tx_pvls / plhiv)
+      
 
   #add iso code in for merging
-    df_vl <- df_vl %>% 
+    df_vls <- df_vls %>% 
       mutate(iso = countrycode(countryname, "country.name", "iso3c", warn = FALSE)) %>% 
       relocate(iso, .after = "countryname")
     
