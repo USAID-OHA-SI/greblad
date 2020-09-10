@@ -73,15 +73,99 @@ library(patchwork)
 # PLOT --------------------------------------------------------------------
 
   #compare PEPFAR VLS proxy to UNAIDS
-    df_full %>% 
+  
+  df_full %>% 
+    filter(is.na(vls)) %>% 
+    arrange(plhiv_pepfar) %>% 
+    pull(countryname) %>% 
+    paste0(collapse = ", ")
+  
+    vl1 <- df_full %>%
+      filter(!is.na(vls)) %>% 
+      mutate(close = ifelse((vls_pepfar >= vls_lower & vls_pepfar <= vls_upper),
+                            "Close", "Not Close"),
+             close = ifelse(is.na(close), "Not Close", close)) %>% 
       ggplot(aes(y = fct_reorder(countryname, plhiv))) +
-      geom_vline(xintercept = (.95 * .95 * .95)) +
+      geom_vline(xintercept = (.95 * .95 * .95), linetype = "dashed") +
       geom_errorbar(aes(xmin = vls_lower, xmax = vls_upper), width = 0, color = "gray80") + 
       geom_point(aes(x = vls), size = 3, color = "gray80") +
       geom_point(aes(x = vls_pepfar), size = 4, color = USAID_medblue) +
+      facet_grid(close~., scales = "free_y", space = "free_y") +
+      labs(x = "VLS", y = NULL
+           #subtitle = "FY19Q4 TX_PVLS_N / FY19 PLHIV (Data Pack)"
+           ) +
+      scale_x_continuous(labels = percent) +
+      si_style_xgrid() +
+      theme(strip.text = element_blank(),
+            # axis.text.y = element_blank(size = 8),
+            panel.spacing.y=unit(1, "lines"))
+    
+    vl1h <- df_full %>% 
+      filter(!is.na(vls)) %>%
+      mutate(close = ifelse((vls_pepfar >= vls_lower & vls_pepfar <= vls_upper),
+                            "Close", "Not Close"),
+             close = ifelse(is.na(close), "Not Close", close)) %>% 
+      mutate(variance = abs(vls - vls_pepfar)) %>% 
+      select(countryname, variance) %>% 
+      slice_max(variance, n = 8)
+      ggplot(aes(x = variance, y = fct_reorder(countryname, plhiv))) +
+      geom_col(fill = "gray50") +
+      geom_vline(xintercept = 0) +
+      facet_grid(close~., scales = "free_y", space = "free_y") +
+      scale_x_continuous(expand = c(.0005, .0005)) +
+      expand_limits(x = .75) +
       labs(x = NULL, y = NULL) +
+      si_style_nolines() +
+      theme(axis.text.x = element_blank(),
+            axis.text.y = element_blank(),
+            panel.spacing.y=unit(1, "lines"))
+    vl1 + vl1h + 
+      plot_layout(width = c(6, 1)) +
+      plot_annotation(
+        title = 'PEPFAR DATA NOT A CLOSE SUBSTITUTE',
+        subtitle = 'Most VLS program data fall outside the UNAIDS VLS estimate bounds to justify using where no UNAIDS data exists',
+        caption = 'PEPFAR VLS = FY19Q4 TX_PVLS_N / FY19 PLHIV
+        UNAIDS CY19 People living with HIV who have suppressed viral loads (%)
+        Sources: PEPFAR MSD + IMPATT FY20Q3i, UNAIDS [2020-09-04]',
+        theme = si_style()
+      )
+    
+    
+    ggsave("Images/VLS_comparison.pdf", device = cairo_pdf,
+           height = 7, width = 8, units = "in")
+    
+    
+    vl2 <- df_full %>%
+      filter(!is.na(vls)) %>% 
+      ggplot(aes(y = fct_reorder(countryname, plhiv))) +
+      geom_vline(xintercept = (.95 * .95 * .95), linetype = "dashed") +
+      geom_errorbar(aes(xmin = vls_lower, xmax = vls_upper), width = 0, color = "gray80") + 
+      geom_point(aes(x = vls), size = 3, color = "gray80") +
+      geom_point(aes(x = vls_proxy_pepfar), size = 4, color = USAID_ltblue) +
+      labs(x = NULL, y = NULL, subtitle = "FY20Q3 TX_PVLS_N / FY20Q1 TX_CURR") +
       scale_x_continuous(labels = percent) +
       si_style_xgrid()
+    
+    vl2h <- df_full %>% 
+      filter(!is.na(vls)) %>% 
+      mutate(variance = abs(vls - vls_proxy_pepfar)) %>% 
+      ggplot(aes(x = variance, y = fct_reorder(countryname, plhiv))) +
+      geom_col(fill = "gray50") +
+      geom_vline(xintercept = 0) +
+      expand_limits(x = .75) +
+      scale_x_continuous(expand = c(.0005, .0005)) +
+      labs(x = NULL, y = NULL) +
+      si_style_nolines() +
+      theme(axis.text.x = element_blank(),
+            axis.text.y = element_blank())
+    
+    vl1 + vl1h + vl2 + vl2h + 
+      plot_layout(width = c(5, 1, 5, 1))
+    
+
+    
+    ggsave("Images/VLS_comparison.pdf", device = cairo_pdf,
+           height = 4, width = 8, units = "in")
 
   #VLS v country capacity
     df_full %>% 
