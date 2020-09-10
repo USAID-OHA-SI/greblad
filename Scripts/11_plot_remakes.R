@@ -3,7 +3,7 @@
 ##  PURPOSE: recreate graphics with country level data
 ##  LICENCE: MIT
 ##  DATE:    2020-09-04
-##  UPDATE:  
+##  UPDATE:  2020-09-08
 
 
 # DEPENDENCIES ------------------------------------------------------------
@@ -24,6 +24,7 @@ library(patchwork)
     df_pepfar_vls <- read_csv("Dataout/pepfar_vls.csv")
     df_capacity <- read_csv("Dataout/ctry_capacity.csv") %>% select(-countryname)
     df_unaids <- read_csv("Dataout/plhiv_vls.csv") %>% select(-countryname)
+    df_phia <- read_csv("Data/phia_vls.csv") %>% select(-countryname)
     df_con_prev <- read_csv("Dataout/contraceptive_prev.csv") %>% select(-countryname)
     df_immunizations <- read_csv("Dataout/immunizations.csv") %>% select(-countryname)
 
@@ -36,6 +37,7 @@ library(patchwork)
     df_full <- df_pepfar %>% 
       left_join(df_capacity) %>% 
       left_join(df_unaids) %>% 
+      left_join(df_phia) %>% 
       left_join(df_con_prev) %>% 
       left_join(df_immunizations)
 
@@ -44,6 +46,15 @@ library(patchwork)
       mutate(region = countrycode(iso, "iso3c", "continent")) %>% 
       relocate(iso, region, .after = countryname)
 
+    
+  #include PHIA numbers for VL where missing from UNAIDS
+    df_full <- df_full %>% 
+      mutate(vls_combo = ifelse(!is.na(vls), vls, vls_phia),
+             vls_combo_source = case_when(countryname == "Nigeria" ~ "NAIIS",
+                                          !is.na(vls) ~ "UNAIDS",
+                                          !is.na(vls_phia) ~ "PHIA"))
+      
+    
   glimpse(df_full)
 
 # CHECK -------------------------------------------------------------------
