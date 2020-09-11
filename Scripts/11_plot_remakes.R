@@ -3,7 +3,7 @@
 ##  PURPOSE: recreate graphics with country level data
 ##  LICENCE: MIT
 ##  DATE:    2020-09-04
-##  UPDATE:  2020-09-08
+##  UPDATE:  2020-09-10
 
 
 # DEPENDENCIES ------------------------------------------------------------
@@ -53,6 +53,11 @@ library(patchwork)
              vls_combo_source = case_when(countryname == "Nigeria" ~ "NAIIS",
                                           !is.na(vls) ~ "UNAIDS",
                                           !is.na(vls_phia) ~ "PHIA"))
+    
+  #focus countries
+    df_full <- df_full %>% 
+      mutate(focus_country = countryname %in% c("South Africa", "Zimbabwe", "Zambia",
+                                                "Haiti", "Tanzania", "Nigeria"))
       
     
   glimpse(df_full)
@@ -164,66 +169,177 @@ library(patchwork)
     
 
     
-    ggsave("Images/VLS_comparison.pdf", device = cairo_pdf,
+    ggsave("Graphics/VLS_comparison.pdf", device = cairo_pdf,
            height = 4, width = 8, units = "in")
 
+    
+    
   #VLS v country capacity
     df_full %>% 
-      select(region, countryname, orig, vls, ctry_capacity) %>% 
+      select(region, countryname, orig, vls_combo, ctry_capacity) %>% 
       arrange(region, orig) %>% 
       prinf()
+    
+    
+    df_full %>%
+      filter(is.na(vls_combo)) %>% 
+      pull(countryname) %>% 
+      paste0(collapse = ", ")
+      select(countryname, orig, vls_combo, ctry_capacity) %>% 
   
     df_full %>% 
-      ggplot(aes(vls, ctry_capacity)) +
+      ggplot(aes(vls_combo, ctry_capacity)) +
       geom_vline(xintercept = (.95 * .95 * .95), linetype = "dashed", color = "gray30") +
-      # geom_hline(yintercept = mean(df_full$ctry_capacity)) +
-      # geom_point(aes(color = region == "Asia"), size = 4, show.legend = FALSE, na.rm = TRUE) +
       geom_text_repel(aes(label = countryname), na.rm = TRUE,
-                      family = "Source Sans Pro", size = 4, color = "gray50") +
-      geom_point(size = 4, alpha = .6, na.rm = TRUE) +
-      scale_x_continuous(label = percent) +
+                      family = "Source Sans Pro", size = 2, color = "gray50") +
+      geom_point(size = 4, color = USAID_medblue, alpha = .8, na.rm = TRUE) +
+      scale_x_continuous(label = percent, expand = c(.01, .01)) +
+      scale_y_continuous(expand = c(.01, .01)) +
+      expand_limits(x = c(0,1), y = c(0, 7)) +
+      labs(x = "Proximity to Control", y = "Country Capacity") +
       # scale_color_manual(values = c(USAID_lgrey, USAID_medblue)) +
       si_style()
     
+    ggsave("Graphics/VLS_Capacity.pdf", device = cairo_pdf,
+           height = 4.15, width = 6.1, units = "in")
+    
+    df_full %>% 
+      ggplot(aes(vls_combo, ctry_capacity)) +
+      geom_vline(xintercept = (.95 * .95 * .95), linetype = "dashed", color = "gray30") +
+      geom_text_repel(aes(label = case_when(region == "Asia" ~ countryname)), na.rm = TRUE,
+                      family = "Source Sans Pro", size = 2, color = "gray50") +
+      geom_point(aes(color = region == "Asia"), size = 4, alpha = .8, na.rm = TRUE) +
+      scale_x_continuous(label = percent, expand = c(.01, .01)) +
+      scale_y_continuous(expand = c(.01, .01)) +
+      expand_limits(x = c(0,1), y = c(0, 7)) +
+      labs(x = "Proximity to Control", y = "Country Capacity") +
+      scale_color_manual(values = c(color = "gray60", USAID_medblue)) +
+      si_style() +
+      theme(legend.position = "none")
+    
+    ggsave("Graphics/VLS_Capacity_Asia.pdf", device = cairo_pdf,
+           height = 4.15, width = 6.1, units = "in")
+    
   #VLS v budget share
     df_full %>% 
-      ggplot(aes(vls, cop20_usaid_share)) +
+      ggplot(aes(vls_combo, cop20_usaid_share)) +
       geom_vline(xintercept = (.95 * .95 * .95), linetype = "dashed", color = "gray30") +
       geom_hline(yintercept = .5, linetype = "dashed", color = "gray30") +
-      geom_text_repel(aes(label = iso), na.rm = TRUE,
-                      family = "Source Sans Pro", size = 4, color = "gray50") +
-      geom_point(aes(size = cop20_usaid_budget), color = USAID_medblue, alpha = .6, na.rm = TRUE) +
-      expand_limits(y = 0, x = 0)  +      
-      scale_x_continuous(label = percent) +
-      scale_y_continuous(label = percent) +
+      geom_point(aes(size = cop20_usaid_budget, color = focus_country), #color = USAID_medblue, 
+                 alpha = .8, na.rm = TRUE) +
+      geom_text_repel(aes(label = countryname), na.rm = TRUE,
+                      family = "Source Sans Pro", size = 2, color = "gray50") +
+      expand_limits(y = 0, x = c(0, 1))  +      
+      scale_x_continuous(label = percent, expand = c(.01, .01)) +
+      scale_y_continuous(label = percent, expand = c(.01, .01)) +
       scale_size(range = c(1, 14), labels = comma) +
-      si_style()
+      scale_color_manual(values = c(USAID_ltblue, USAID_medblue)) +
+      labs(x = "Proximity to Control", y = "USAID Budget Share") +
+      si_style() +
+      theme(legend.position = "right")
 
+    ggsave("Graphics/VLS_BudgetShare.pdf", device = cairo_pdf,
+           height = 4, width = 9.67, units = "in")
+    
+    
+    df_full %>% 
+      ggplot(aes(vls_combo, cop20_usaid_share)) +
+      geom_vline(xintercept = (.95 * .95 * .95), linetype = "dashed", color = "gray30") +
+      geom_hline(yintercept = .5, linetype = "dashed", color = "gray30") +
+      geom_point(aes(size = cop20_usaid_budget, color = region == "Asia"), #color = USAID_medblue, 
+                 alpha = .8, na.rm = TRUE) +
+      geom_text_repel(aes(label = countryname), na.rm = TRUE,
+                      family = "Source Sans Pro", size = 2, color = "gray50") +
+      expand_limits(y = 0, x = c(0, 1))  +      
+      scale_x_continuous(label = percent, expand = c(.01, .01)) +
+      scale_y_continuous(label = percent, expand = c(.01, .01)) +
+      scale_size(range = c(1, 14), labels = comma) +
+      scale_color_manual(values = c(USAID_ltblue, USAID_medblue)) +
+      labs(x = "Proximity to Control", y = "USAID Budget Share") +
+      si_style() +
+      theme(legend.position = "right")
+    
+    ggsave("Graphics/VLS_BudgetShare_Asia.pdf", device = cairo_pdf,
+           height = 4, width = 9.67, units = "in")
+    
   #VLS v budget share x non-HIV budget share
     
   #VLS v Contraception
     v1 <- df_full %>% 
-      ggplot(aes(vls, contraceptive_prev)) +
+      ggplot(aes(vls_combo, contraceptive_prev)) +
       geom_vline(xintercept = (.95 * .95 * .95), linetype = "dashed", color = "gray30") +
+      # geom_text_repel(aes(label = case_when(focus_country ~ countryname)), na.rm = TRUE,
       geom_text_repel(aes(label = countryname), na.rm = TRUE,
-                      family = "Source Sans Pro", size = 4, color = "gray50") +
-      geom_point(size = 4, alpha = .6, na.rm = TRUE) +
-      scale_x_continuous(label = percent) +
-      scale_y_continuous(label = percent) +
+                      family = "Source Sans Pro", size = 2, color = "gray50") +
+      geom_point(aes(color = focus_country),size = 2, alpha = .6, na.rm = TRUE) +
+      scale_x_continuous(label = percent, expand = c(.01, .01)) +
+      scale_y_continuous(label = percent, expand = c(.01, .01)) +
+      scale_color_manual(values = c(USAID_medblue, USAID_red)) +
       expand_limits(x = c(0, 1), y = c(0, 1)) +
-      si_style()
+      labs(x = "Proximity to Control", y = "Contraceptive\nprevalnce rate") +
+      si_style() +
+      theme(legend.position = "none")
     
   #VLS v Immunization
     v2 <- df_full %>% 
-      ggplot(aes(vls, vacs_coverage)) +
+      ggplot(aes(vls_combo, vacs_coverage)) +
       geom_vline(xintercept = (.95 * .95 * .95), linetype = "dashed", color = "gray30") +
       geom_text_repel(aes(label = countryname), na.rm = TRUE,
-                      family = "Source Sans Pro", size = 4, color = "gray50") +
-      geom_point(size = 4, alpha = .6, na.rm = TRUE) +
-      scale_x_continuous(label = percent) +
-      scale_y_continuous(label = percent) +
+      # geom_text_repel(aes(label = case_when(focus_country ~ countryname)), na.rm = TRUE,
+                      family = "Source Sans Pro", size = 2, color = "gray50") +
+      geom_point(aes(color = focus_country),size = 2, alpha = .6, na.rm = TRUE) +
+      scale_x_continuous(label = percent, expand = c(.01, .01)) +
+      scale_y_continuous(label = percent, expand = c(.01, .01)) +
+      scale_color_manual(values = c(USAID_medblue, USAID_red)) +
       expand_limits(x = c(0, 1), y = c(0, 1)) +
-      si_style()
+      labs(x = "Proximity to Control", y = "Vaccine\ncoverage") +
+      si_style() +
+      theme(legend.position = "none")
 
-    v1 + v2    
+    v1 + v2   
+    
+    ggsave("Graphics/VLS_Health.pdf", device = cairo_pdf,
+           height = 4, width = 9.6, units = "in")
+    
+    
+    
+    #VLS v Contraception
+    v1a <- df_full %>% 
+      ggplot(aes(vls_combo, contraceptive_prev)) +
+      geom_vline(xintercept = (.95 * .95 * .95), linetype = "dashed", color = "gray30") +
+      # geom_text_repel(aes(label = case_when(focus_country ~ countryname)), na.rm = TRUE,
+      geom_text_repel(aes(label = countryname), na.rm = TRUE,
+                      family = "Source Sans Pro", size = 2, color = "gray50") +
+      geom_point(aes(color = region == "Asia"),size = 2, alpha = .6, na.rm = TRUE) +
+      scale_x_continuous(label = percent, expand = c(.01, .01)) +
+      scale_y_continuous(label = percent, expand = c(.01, .01)) +
+      scale_color_manual(values = c(USAID_medblue, USAID_red)) +
+      expand_limits(x = c(0, 1), y = c(0, 1)) +
+      labs(x = "Proximity to Control", y = "Contraceptive\nprevalnce rate") +
+      si_style() +
+      theme(legend.position = "none")
+    
+    #VLS v Immunization
+    v2a <- df_full %>% 
+      ggplot(aes(vls_combo, vacs_coverage)) +
+      geom_vline(xintercept = (.95 * .95 * .95), linetype = "dashed", color = "gray30") +
+      geom_text_repel(aes(label = countryname), na.rm = TRUE,
+                      # geom_text_repel(aes(label = case_when(focus_country ~ countryname)), na.rm = TRUE,
+                      family = "Source Sans Pro", size = 2, color = "gray50") +
+      geom_point(aes(color = region == "Asia"),size = 2, alpha = .6, na.rm = TRUE) +
+      scale_x_continuous(label = percent, expand = c(.01, .01)) +
+      scale_y_continuous(label = percent, expand = c(.01, .01)) +
+      scale_color_manual(values = c(USAID_medblue, USAID_red)) +
+      expand_limits(x = c(0, 1), y = c(0, 1)) +
+      labs(x = "Proximity to Control", y = "Vaccine\ncoverage") +
+      si_style() +
+      theme(legend.position = "none")
+    
+    v1a + v2a   
+    
+    ggsave("Graphics/VLS_Health_Asia.pdf", device = cairo_pdf,
+           height = 4, width = 9.6, units = "in")
+
+    df_full %>% 
+      write_csv("Dataout/DalbergRemakes.csv", na = "")
     
