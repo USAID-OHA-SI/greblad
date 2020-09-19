@@ -75,6 +75,12 @@ library(patchwork)
   df_full <- df_full %>% 
     mutate(orig = iso %in% orig)
 
+
+# EXPORT DATASET ----------------------------------------------------------
+
+  df_full %>% 
+    write_csv("Dataout/DalbergRemakes.csv", na = "")
+  
 # PLOT --------------------------------------------------------------------
 
   #compare PEPFAR VLS proxy to UNAIDS
@@ -340,6 +346,5 @@ library(patchwork)
     ggsave("Graphics/VLS_Health_Asia.pdf", device = cairo_pdf,
            height = 4, width = 9.6, units = "in")
 
-    df_full %>% 
-      write_csv("Dataout/DalbergRemakes.csv", na = "")
+
     
