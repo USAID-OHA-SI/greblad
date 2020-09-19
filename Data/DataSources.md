@@ -12,9 +12,15 @@
   - Date accessed: 2020-08-24
   - Method: Downloads > MER FY2020 Q3 Pre-Cleaning > MER_Structured_Datasets_NAT_SUBNAT_FY15-20_20200814_v1_1.zip
   
-- COP Matrix Report
+- COP19 and COP20 Matrix Report
   - Filename: Not public
-  - Source: https://docs.google.com/spreadsheets/d/15REkQ2kNIgYR3LQ8k7WnQYmXBY4UmZpaRNwRQqI-V7I/edit#gid=1064510658
+  - Source: https://docs.google.com/spreadsheets/d/15REkQ2kNIgYR3LQ8k7WnQYmXBY4UmZpaRNwRQqI-V7I
+  - Date accessed: 2020-09-03
+  - Method: API
+  
+- USAID FY20 653a GHP Allocations_FINAL_12 June 2020
+  - Filename: Not public
+  - Source: https://docs.google.com/spreadsheets/d/1rzlWJgVW1fpQ3CLS26fwnDcq4PKsVS-uqEZBk67Ojy8
   - Date accessed: 2020-09-03
   - Method: API
 
