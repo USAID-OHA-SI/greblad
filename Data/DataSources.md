@@ -15,14 +15,14 @@
 - COP19 and COP20 Matrix Report
   - Filename: Not public
   - Source: https://docs.google.com/spreadsheets/d/15REkQ2kNIgYR3LQ8k7WnQYmXBY4UmZpaRNwRQqI-V7I
-  - Date accessed: 2020-09-03
-  - Method: API
+  - Date accessed: 2020-09-03/2020-09-17
+  - Method: Provided USAID/GH/OHA
   
 - USAID FY20 653a GHP Allocations_FINAL_12 June 2020
   - Filename: Not public
   - Source: https://docs.google.com/spreadsheets/d/1rzlWJgVW1fpQ3CLS26fwnDcq4PKsVS-uqEZBk67Ojy8
-  - Date accessed: 2020-09-03
-  - Method: API
+  - Date accessed: 2020-09-14
+  - Method: Provided by USAID/GH/P3
 
 - Viral Load Suppression
   - Filename: Treatment cascade_People living with HIV who have suppressed viral loads (%)_Population_ All ages.csv
