@@ -13,6 +13,10 @@
   library(countrycode)
 
 
+# GLOBAL VARIABLES --------------------------------------------------------
+
+  curr_year <- "2020"
+
 # IMPORT ------------------------------------------------------------------
 
   #import
@@ -30,8 +34,8 @@
 
   #cleanup names
     df_unaids <- df_unaids %>% 
-      select(countryname = Country, iso, indicator, starts_with("2019")) %>% 
-      rename_all(~str_replace(., "2019", "value")) %>% 
+      select(countryname = Country, iso, indicator, starts_with(curr_year)) %>% 
+      rename_all(~str_replace(., curr_year, "value")) %>% 
       mutate(across(starts_with("value"), 
                     ~ str_remove_all(., "<|>| ")) %>% na_if(., "...")) %>% 
       mutate(across(starts_with("value"), as.double))
