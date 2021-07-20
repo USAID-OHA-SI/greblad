@@ -3,7 +3,7 @@
 ##  PURPOSE: recreate graphics with country level data
 ##  LICENCE: MIT
 ##  DATE:    2020-09-04
-##  UPDATE:  2020-09-10
+##  UPDATE:  2021-07-20
 
 
 # DEPENDENCIES ------------------------------------------------------------
@@ -16,6 +16,7 @@ library(extrafont)
 library(scales)
 library(ggrepel)
 library(patchwork)
+library(ggtext)
 
 # IMPORT ------------------------------------------------------------------
 
@@ -27,6 +28,7 @@ library(patchwork)
     df_phia <- read_csv("Data/phia_vls.csv") %>% select(-countryname)
     df_con_prev <- read_csv("Dataout/contraceptive_prev.csv") %>% select(-countryname)
     df_immunizations <- read_csv("Dataout/immunizations.csv") %>% select(-countryname)
+    df_epi_cat <- read.csv("Data/cop_epi_categories.csv") %>% select(-countryname)
 
 # MUNGE -------------------------------------------------------------------
 
@@ -39,7 +41,8 @@ library(patchwork)
       left_join(df_unaids) %>% 
       left_join(df_phia) %>% 
       left_join(df_con_prev) %>% 
-      left_join(df_immunizations)
+      left_join(df_immunizations) %>% 
+      left_join(df_epi_cat)
 
   #add continent
     df_full <- df_full %>% 
@@ -179,6 +182,51 @@ library(patchwork)
            height = 4, width = 8, units = "in")
 
     
+  #VLS v country capacity (UPDATE)
+    df_viz <- df_full %>% 
+      select(countryname, vls_combo, ctry_capacity, epi_category, epi_category_label, plhiv) %>% 
+      filter(!is.na(epi_category)) %>% 
+      mutate(focal = TRUE)
+    
+    df_xtra <- df_viz %>% 
+      distinct(epi_category, epi_category_label, plhiv) %>% 
+      pmap_dfr(~df_viz %>% 
+                 filter(epi_category != ..1) %>% 
+                 select(vls_combo, ctry_capacity, plhiv) %>% 
+                 mutate(epi_category = ..1,
+                        epi_category_label = ..2,
+                        focal = FALSE))
+    
+    df_viz <- df_viz %>% 
+      bind_rows(df_xtra) %>% 
+      mutate(fill_color = ifelse(focal == TRUE, usaid_medblue, trolley_grey_light))
+    
+    
+    df_viz %>% 
+      ggplot(aes(vls_combo, ctry_capacity, color = fill_color)) +
+      geom_vline(xintercept = (.95^3), linetype = "dashed", color = "gray30") +
+      geom_point(data = filter(df_viz, focal == FALSE), aes(size = plhiv), #size = 4, 
+                 alpha = .8, na.rm = TRUE) +
+      geom_point(data = filter(df_viz, focal == TRUE), aes(size = plhiv), #size = 4, 
+                 alpha = .8, na.rm = TRUE) +
+      geom_text_repel(aes(label = countryname), na.rm = TRUE,
+                      family = "Source Sans Pro", size = 2, color = "gray50") +
+      facet_wrap(~epi_category_label, labeller = label_wrap_gen(40)) +
+      scale_x_continuous(label = percent, expand = c(.01, .01),
+                         breaks = c(0, .25, .5, .75, .95^3, 1)) +
+      scale_y_continuous(expand = c(.01, .01)) +
+      scale_size(labels = label_number(accuracy = 1, scale = 1e-6, suffix = "m")) +
+      scale_color_identity() +
+      expand_limits(x = c(0,1), y = c(0, 7)) +
+      labs(x = "Proximity to Control", y = "Country Capacity",
+           size = "People Living with HIV (PLHIV)",
+           caption = "Souce: PEPFAR COP21 Guidance, UNAIDS, European Commission Disaster Risk Management Knowledge Centre  
+       SI Analytics: Aaron Chafetz/Tim Essam/Karishma Srikanth
+       US Agency for International Development") +
+      si_style() +
+      theme(legend.position = "none")
+    
+    si_save("Graphics/EpiControlUpdate.svg")
     
   #VLS v country capacity
     df_full %>% 
