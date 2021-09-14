@@ -103,7 +103,7 @@ library(ggtext)
       geom_vline(xintercept = (.95 * .95 * .95), linetype = "dashed") +
       geom_errorbar(aes(xmin = vls_lower, xmax = vls_upper), width = 0, color = "gray80") + 
       geom_point(aes(x = vls), size = 3, color = "gray80") +
-      geom_point(aes(x = vls_pepfar), size = 4, color = USAID_medblue) +
+      geom_point(aes(x = vls_pepfar), size = 4, color = usaid_medblue) +
       facet_grid(close~., scales = "free_y", space = "free_y") +
       labs(x = "VLS", y = NULL
            #subtitle = "FY19Q4 TX_PVLS_N / FY19 PLHIV (Data Pack)"
@@ -155,7 +155,7 @@ library(ggtext)
       geom_vline(xintercept = (.95 * .95 * .95), linetype = "dashed") +
       geom_errorbar(aes(xmin = vls_lower, xmax = vls_upper), width = 0, color = "gray80") + 
       geom_point(aes(x = vls), size = 3, color = "gray80") +
-      geom_point(aes(x = vls_proxy_pepfar), size = 4, color = USAID_ltblue) +
+      geom_point(aes(x = vls_proxy_pepfar), size = 4, color = usaid_lightblue) +
       labs(x = NULL, y = NULL, subtitle = "FY20Q3 TX_PVLS_N / FY20Q1 TX_CURR") +
       scale_x_continuous(labels = percent) +
       si_style_xgrid()
@@ -246,12 +246,12 @@ library(ggtext)
       geom_vline(xintercept = (.95 * .95 * .95), linetype = "dashed", color = "gray30") +
       geom_text_repel(aes(label = countryname), na.rm = TRUE,
                       family = "Source Sans Pro", size = 2, color = "gray50") +
-      geom_point(size = 4, color = USAID_medblue, alpha = .8, na.rm = TRUE) +
+      geom_point(size = 4, color = usaid_medblue, alpha = .8, na.rm = TRUE) +
       scale_x_continuous(label = percent, expand = c(.01, .01)) +
       scale_y_continuous(expand = c(.01, .01)) +
       expand_limits(x = c(0,1), y = c(0, 7)) +
       labs(x = "Proximity to Control", y = "Country Capacity") +
-      # scale_color_manual(values = c(USAID_lgrey, USAID_medblue)) +
+      # scale_color_manual(values = c(USAID_lgrey, usaid_medblue)) +
       si_style()
     
     ggsave("Graphics/VLS_Capacity.pdf", device = cairo_pdf,
@@ -267,7 +267,7 @@ library(ggtext)
       scale_y_continuous(expand = c(.01, .01)) +
       expand_limits(x = c(0,1), y = c(0, 7)) +
       labs(x = "Proximity to Control", y = "Country Capacity") +
-      scale_color_manual(values = c(color = "gray60", USAID_medblue)) +
+      scale_color_manual(values = c(color = "gray60", usaid_medblue)) +
       si_style() +
       theme(legend.position = "none")
     
@@ -279,7 +279,7 @@ library(ggtext)
       ggplot(aes(vls_combo, cop20_usaid_share)) +
       geom_vline(xintercept = (.95 * .95 * .95), linetype = "dashed", color = "gray30") +
       geom_hline(yintercept = .5, linetype = "dashed", color = "gray30") +
-      geom_point(aes(size = cop20_usaid_budget, color = focus_country), #color = USAID_medblue, 
+      geom_point(aes(size = cop20_usaid_budget, color = focus_country), #color = usaid_medblue, 
                  alpha = .8, na.rm = TRUE) +
       geom_text_repel(aes(label = countryname), na.rm = TRUE,
                       family = "Source Sans Pro", size = 2, color = "gray50") +
@@ -287,7 +287,7 @@ library(ggtext)
       scale_x_continuous(label = percent, expand = c(.01, .01)) +
       scale_y_continuous(label = percent, expand = c(.01, .01)) +
       scale_size(range = c(1, 14), labels = comma) +
-      scale_color_manual(values = c(USAID_ltblue, USAID_medblue)) +
+      scale_color_manual(values = c(usaid_lightblue, usaid_medblue)) +
       labs(x = "Proximity to Control", y = "USAID Budget Share") +
       si_style() +
       theme(legend.position = "right")
@@ -300,7 +300,7 @@ library(ggtext)
       ggplot(aes(vls_combo, cop20_usaid_share)) +
       geom_vline(xintercept = (.95 * .95 * .95), linetype = "dashed", color = "gray30") +
       geom_hline(yintercept = .5, linetype = "dashed", color = "gray30") +
-      geom_point(aes(size = cop20_usaid_budget, color = region == "Asia"), #color = USAID_medblue, 
+      geom_point(aes(size = cop20_usaid_budget, color = region == "Asia"), #color = usaid_medblue, 
                  alpha = .8, na.rm = TRUE) +
       geom_text_repel(aes(label = countryname), na.rm = TRUE,
                       family = "Source Sans Pro", size = 2, color = "gray50") +
@@ -308,7 +308,7 @@ library(ggtext)
       scale_x_continuous(label = percent, expand = c(.01, .01)) +
       scale_y_continuous(label = percent, expand = c(.01, .01)) +
       scale_size(range = c(1, 14), labels = comma) +
-      scale_color_manual(values = c(USAID_ltblue, USAID_medblue)) +
+      scale_color_manual(values = c(usaid_lightblue, usaid_medblue)) +
       labs(x = "Proximity to Control", y = "USAID Budget Share") +
       si_style() +
       theme(legend.position = "right")
@@ -328,7 +328,7 @@ library(ggtext)
       geom_point(aes(color = focus_country),size = 2, alpha = .6, na.rm = TRUE) +
       scale_x_continuous(label = percent, expand = c(.01, .01)) +
       scale_y_continuous(label = percent, expand = c(.01, .01)) +
-      scale_color_manual(values = c(USAID_medblue, USAID_red)) +
+      scale_color_manual(values = c(usaid_medblue, USAID_red)) +
       expand_limits(x = c(0, 1), y = c(0, 1)) +
       labs(x = "Proximity to Control", y = "Contraceptive\nprevalnce rate") +
       si_style() +
@@ -344,7 +344,7 @@ library(ggtext)
       geom_point(aes(color = focus_country),size = 2, alpha = .6, na.rm = TRUE) +
       scale_x_continuous(label = percent, expand = c(.01, .01)) +
       scale_y_continuous(label = percent, expand = c(.01, .01)) +
-      scale_color_manual(values = c(USAID_medblue, USAID_red)) +
+      scale_color_manual(values = c(usaid_medblue, usaid_red)) +
       expand_limits(x = c(0, 1), y = c(0, 1)) +
       labs(x = "Proximity to Control", y = "Vaccine\ncoverage") +
       si_style() +
@@ -367,7 +367,7 @@ library(ggtext)
       geom_point(aes(color = region == "Asia"),size = 2, alpha = .6, na.rm = TRUE) +
       scale_x_continuous(label = percent, expand = c(.01, .01)) +
       scale_y_continuous(label = percent, expand = c(.01, .01)) +
-      scale_color_manual(values = c(USAID_medblue, USAID_red)) +
+      scale_color_manual(values = c(usaid_medblue, usaid_red)) +
       expand_limits(x = c(0, 1), y = c(0, 1)) +
       labs(x = "Proximity to Control", y = "Contraceptive\nprevalnce rate") +
       si_style() +
@@ -383,7 +383,7 @@ library(ggtext)
       geom_point(aes(color = region == "Asia"),size = 2, alpha = .6, na.rm = TRUE) +
       scale_x_continuous(label = percent, expand = c(.01, .01)) +
       scale_y_continuous(label = percent, expand = c(.01, .01)) +
-      scale_color_manual(values = c(USAID_medblue, USAID_red)) +
+      scale_color_manual(values = c(usaid_medblue, usaid_red)) +
       expand_limits(x = c(0, 1), y = c(0, 1)) +
       labs(x = "Proximity to Control", y = "Vaccine\ncoverage") +
       si_style() +
