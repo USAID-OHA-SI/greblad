@@ -3,7 +3,7 @@
 ##  PURPOSE: munge budget data
 ##  LICENCE: MIT
 ##  DATE:    2020-09-03
-##  UPDATE:  
+##  UPDATE:  2021-09-14
 
 
 # DEPENDENCIES ------------------------------------------------------------
@@ -45,7 +45,7 @@
 
   #USAID share of PEPFAR budget by OU
     df_budget <- df_copmatrix_agg %>% 
-      group_by(operating_unit) %>% 
+      group_by(operating_unit, planning_cycle) %>% 
       mutate(share = budget/sum(budget, na.rm = TRUE),
              share_sans_ghsc = budget_sans_ghsc/sum(budget_sans_ghsc, na.rm = TRUE)) %>% 
       ungroup() %>% 
