@@ -12,6 +12,7 @@
   library(googlesheets4)
   library(janitor)
   library(countrycode)
+  library(glamr)
 
 
 # IMPORT ------------------------------------------------------------------
@@ -35,8 +36,10 @@
 
   #create planning lvl w/o M&O and w/ + w/o supply chain; aggregate to OU x agency level
     df_copmatrix_agg <- df_copmatrix %>%
-      filter(record_type != "Management and Operations") %>% 
-      mutate(total_planned_funding_sans_ghsc = case_when(str_detect(mechanism_name, "GHSC", negate = TRUE) ~ total_planned_funding),
+      rename(mech_code = mechanism_id) %>% 
+      remove_mo() %>% 
+      remove_sch(flag_only = TRUE) %>% 
+      mutate(total_planned_funding_sans_ghsc = case_when(mech_sch == FALSE ~ total_planned_funding),
              planning_cycle = str_remove_all(planning_cycle, "^20| COP") %>% paste0("cop", .)) %>% 
       group_by(operating_unit, funding_agency, planning_cycle) %>% 
       summarise(budget = sum(total_planned_funding, na.rm = TRUE),
