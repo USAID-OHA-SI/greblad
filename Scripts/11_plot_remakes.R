@@ -3,7 +3,7 @@
 ##  PURPOSE: recreate graphics with country level data
 ##  LICENCE: MIT
 ##  DATE:    2020-09-04
-##  UPDATE:  2021-07-20
+##  UPDATE:  2021-09-15
 
 
 # DEPENDENCIES ------------------------------------------------------------
@@ -281,7 +281,8 @@ library(ggtext)
       geom_hline(yintercept = .5, linetype = "dashed", color = "gray30") +
       geom_point(aes(size = cop20_usaid_budget, color = focus_country), #color = usaid_medblue, 
                  alpha = .8, na.rm = TRUE) +
-      geom_text_repel(aes(label = countryname), na.rm = TRUE, max.overlaps = 20, 
+      geom_text_repel(data = filter(df_full, focus_country == TRUE),
+                      aes(label = countryname), na.rm = TRUE, max.overlaps = 20, 
                       family = "Source Sans Pro", size = 2, color = "gray50") +
       expand_limits(y = 0, x = c(0, 1))  +      
       scale_x_continuous(label = percent, expand = c(.01, .01)) +
