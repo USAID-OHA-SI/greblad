@@ -3,7 +3,7 @@
 ##  PURPOSE: recreate graphics with country level data
 ##  LICENCE: MIT
 ##  DATE:    2020-09-04
-##  UPDATE:  2021-09-15
+##  UPDATE:  2021-12-16
 
 
 # DEPENDENCIES ------------------------------------------------------------
@@ -20,7 +20,9 @@ library(ggtext)
 
 # IMPORT ------------------------------------------------------------------
 
-  #import outputs from earlier scripts
+  # Generate data outputs from ./Scripts/01_budget.R
+  
+  # import outputs from earlier scripts
     df_budget <- read_csv("Dataout/budgetshare.csv")
     df_pepfar_vls <- read_csv("Dataout/pepfar_vls.csv")
     df_capacity <- read_csv("Dataout/ctry_capacity.csv") %>% select(-countryname)
@@ -34,6 +36,16 @@ library(ggtext)
 
   #join pepfar data   
     df_pepfar <- full_join(df_budget, df_pepfar_vls)
+    
+  # Join UNAID VLS
+    df_pepfar_unaid <- df_pepfar %>% 
+      left_join(df_unaids) %>% 
+      filter(!is.na(vls), cop19_usaid_budget > 0) %>% 
+      mutate(
+        budget_size = case_when(
+          cop19_usaid_budget >= (fy20_usaid_ghbudget - cop19_usaid_budget) ~ "Global Health (HIV/AIDS)",
+          TRUE ~ "Global Health (non-HIV/AIDS)"
+        ))
 
   #left join other data by iso
     df_full <- df_pepfar %>% 
@@ -59,8 +71,12 @@ library(ggtext)
     
   #focus countries
     df_full <- df_full %>% 
-      mutate(focus_country = countryname %in% c("South Africa", "Zimbabwe", "Zambia",
-                                                "Haiti", "Tanzania", "Nigeria"))
+      mutate(focus_country = countryname %in% c("South Africa", 
+                                                "Zimbabwe", 
+                                                "Zambia",
+                                                "Haiti", 
+                                                "Tanzania", 
+                                                "Nigeria"))
       
     
   glimpse(df_full)
@@ -101,7 +117,8 @@ library(ggtext)
              close = ifelse(is.na(close), "Not Close", close)) %>% 
       ggplot(aes(y = fct_reorder(countryname, plhiv))) +
       geom_vline(xintercept = (.95 * .95 * .95), linetype = "dashed") +
-      geom_errorbar(aes(xmin = vls_lower, xmax = vls_upper), width = 0, color = "gray80") + 
+      geom_errorbar(aes(xmin = vls_lower, xmax = vls_upper), 
+                    width = 0, color = "gray80") + 
       geom_point(aes(x = vls), size = 3, color = "gray80") +
       geom_point(aes(x = vls_pepfar), size = 4, color = usaid_medblue) +
       facet_grid(close~., scales = "free_y", space = "free_y") +
@@ -121,8 +138,8 @@ library(ggtext)
              close = ifelse(is.na(close), "Not Close", close)) %>% 
       mutate(variance = abs(vls - vls_pepfar)) %>% 
       select(countryname, variance) %>% 
-      slice_max(variance, n = 8)
-      ggplot(aes(x = variance, y = fct_reorder(countryname, plhiv))) +
+      slice_max(variance, n = 8) %>% 
+      ggplot(aes(x = variance, y = fct_reorder(countryname, plhiv_pepfar))) +
       geom_col(fill = "gray50") +
       geom_vline(xintercept = 0) +
       facet_grid(close~., scales = "free_y", space = "free_y") +
@@ -133,6 +150,7 @@ library(ggtext)
       theme(axis.text.x = element_blank(),
             axis.text.y = element_blank(),
             panel.spacing.y=unit(1, "lines"))
+      
     vl1 + vl1h + 
       plot_layout(width = c(6, 1)) +
       plot_annotation(
@@ -239,7 +257,7 @@ library(ggtext)
       filter(is.na(vls_combo)) %>% 
       pull(countryname) %>% 
       paste0(collapse = ", ")
-      select(countryname, orig, vls_combo, ctry_capacity) %>% 
+      #select(countryname, orig, vls_combo, ctry_capacity) %>% 
   
     df_full %>% 
       ggplot(aes(vls_combo, ctry_capacity)) +
@@ -276,10 +294,11 @@ library(ggtext)
     
   #VLS v budget share
     df_full %>% 
-      ggplot(aes(vls_combo, cop20_usaid_share)) +
+      ggplot(aes(vls_combo, cop19_usaid_share)) +
       geom_vline(xintercept = (.95 * .95 * .95), linetype = "dashed", color = "gray30") +
       geom_hline(yintercept = .5, linetype = "dashed", color = "gray30") +
-      geom_point(aes(size = cop20_usaid_budget, color = focus_country), #color = usaid_medblue, 
+      geom_point(aes(size = cop19_usaid_budget, 
+                     color = focus_country), #color = usaid_medblue, 
                  alpha = .8, na.rm = TRUE) +
       geom_text_repel(data = filter(df_full, focus_country == TRUE),
                       aes(label = countryname), na.rm = TRUE, max.overlaps = 20, 
@@ -289,11 +308,97 @@ library(ggtext)
       scale_y_continuous(label = percent, expand = c(.01, .01)) +
       scale_size(range = c(1, 14), labels = comma) +
       scale_color_manual(values = c(usaid_lightblue, usaid_medblue)) +
+      coord_equal() +
       labs(x = "Proximity to Control", y = "USAID Budget Share") +
       si_style() +
       theme(legend.position = "right")
+    
+    # Updates for OHA AHOP PPP
+    
+    viz_budget <- df_pepfar_unaid %>% 
+      ggplot(aes(vls, cop19_usaid_share)) +
+      geom_vline(xintercept = .73,  linetype = "dashed", size = 1.2, color = grey40k) +
+      geom_hline(yintercept = .5, linetype = "dashed", size = 1.2, color = grey40k) +
+      geom_point(aes(size = cop19_usaid_budget, fill = budget_size), 
+                 shape = 21,
+                 color = grey10k,
+                 alpha = .8, na.rm = TRUE,
+                 show.legend = F) +
+      geom_text_repel(#data = df_pepfar_unaid %>% filter(vls > .5),
+                      data = df_pepfar_unaid,
+                      aes(label = countryname), 
+                      na.rm = TRUE, 
+                      max.overlaps = 20,
+                      family = "Source Sans Pro", 
+                      size = 3,
+                      color = usaid_black) +
+      annotate(geom = "segment", 
+               x = .50, xend = 1,
+               y = -.085, yend = -.085,
+               size = .6, color = grey50k,
+               arrow = arrow(type = "closed", length = unit(0.01, "npc"))) +
+      annotate(geom = "text", x = .75, y = -.12,
+               size = 3, color = usaid_black,
+               label = "Proximity to Epi-Control") +
+      annotate(geom = "label", x = 1, y = .04, label.size = NA, fill = "white",
+               size = 5, color = usaid_black, hjust = 1,
+               label = "PLHIV Virally \nSuppressed (2020)") +
+      annotate(geom = "segment", 
+               x = -.1, xend = -.1,
+               y = .5, yend = 1,
+               size = .6, color = grey50k,
+               arrow = arrow(type = "closed", length = unit(0.01, "npc"))) +
+      annotate(geom = "text", x = -.12, y = .75, hjust = 0.5, vjust = 0,
+               angle = 90, size = 3, color = usaid_black,
+               label = "USAID contributes at least \n50% of HIV/AID Budget") +
+      annotate(geom = "curve", 
+               x = 1, xend = .835,
+               y = .8, yend = .74,
+               size = .7, color = grey70k,
+               arrow = arrow(type = "closed", length = unit(0.01, "npc"))) +
+      annotate(geom = "text", x = 1.01, y = .81, hjust = 0,
+               size = 4, color = usaid_black,
+               label = "106.2 Millions\nBigger non-HIV $$") +
+      annotate(geom = "segment", 
+               x = 1, xend = .78,
+               y = .65, yend = .63,
+               size = .7, color = grey70k,
+               arrow = arrow(type = "closed", length = unit(0.01, "npc"))) +
+      annotate(geom = "text", x = 1.01, y = .65, hjust = 0,
+               size = 4, color = usaid_black,
+               label = "126.4 Millions\nBigger HIV $$") +
+      expand_limits(y = 0, x = c(0, 1))  +      
+      scale_x_continuous(labels = percent, expand = c(.01, .01)) +
+      scale_y_continuous(labels = percent, expand = c(.01, .01)) +
+      scale_size(range = c(3, 13), labels = comma) +
+      #scale_fill_si(palette = "scooters", breaks = c(.5, seq(.6, 1, .1))) +
+      scale_fill_manual(values = c(usaid_medblue, usaid_lightblue)) +
+      #scale_fill_manual(breaks = c(.5, seq(.6, 1, .1)),values = si_rampr("scooters", 5)) +
+      coord_cartesian(xlim = c(0, 1), ylim = c(0, 1), expand=T, clip = "off") +
+      #facet_wrap(~budget_size) +
+      labs(x = "", y = "",
+           subtitle = "<span style='font-weight:bold;color:#0067b9'>HIV/AIDS</span> Budget is bigger than the <span style='font-weight:bold;color:#a7c6ed'>non-HIV</span> Global Health budget",
+           caption = "Source: PEPFAR COP21 Matrix, UNAIDS 2020, NAIIS, ECDRMKC") +
+      si_style() +
+      theme(legend.position = "right",
+            plot.margin = unit(c(1, 10, 2, 5), "lines"),
+            plot.caption = element_text(hjust = 0),
+            plot.subtitle = element_markdown(),
+            axis.text = element_markdown(size = 12, color = usaid_black))
 
-    si_save("Graphics/VLS_BudgetShare.pdf", device = cairo_pdf)
+    si_save("Graphics/VLS_BudgetShare.png", 
+            plot = viz_budget,
+            width = 10, 
+            height = 5.625, 
+            dpi = 320)
+    
+    ggsave("Graphics/VLS_BudgetShare.png", 
+           plot = viz_budget,
+           width = 10, 
+           height = 5.625, 
+           dpi = 320)
+    
+    #si_save("Graphics/VLS_BudgetShare.pdf", device = cairo_pdf)
     
     
     df_full %>% 

@@ -25,13 +25,15 @@ library(janitor)
 # MUNGE -------------------------------------------------------------------
 
   #make names useable
-    df_capacity <- df_capacity %>%
-      clean_names()
+    df_capacity <- df_capacity %>% clean_names()
   
   #filter to key indicators
     df_capacity <- df_capacity %>% 
-    select(countryname = country, iso = iso3, governance, hc_access = access_to_health_care_index) %>% 
-    filter(!is.na(countryname)) 
+      select(countryname = country, 
+             iso = iso3, 
+             governance, 
+             hc_access = access_to_health_care_index) %>% 
+      filter(!is.na(countryname)) 
     
   #calc capacity
     df_capacity <- df_capacity %>%  

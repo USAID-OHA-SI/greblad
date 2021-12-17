@@ -20,10 +20,16 @@
   #import from G Drive
   sheet_id <- "15REkQ2kNIgYR3LQ8k7WnQYmXBY4UmZpaRNwRQqI-V7I"
   gs4_auth()
+  
+  sheet_id %>% googledrive::as_id() %>% googledrive::drive_browse()
+  
   df_copmatrix <- read_sheet(sheet_id)
   df_copmatrix19 <- read_sheet(sheet_id, sheet = "2019 Cop matrix")
   
   sheet_id_gh <- "1rzlWJgVW1fpQ3CLS26fwnDcq4PKsVS-uqEZBk67Ojy8"
+  
+  sheet_id_gh %>% googledrive::as_id() %>% googledrive::drive_browse()
+  
   df_ghbudget <- read_sheet(sheet_id_gh)
 
 

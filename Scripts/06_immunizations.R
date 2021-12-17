@@ -39,7 +39,9 @@ library(countrycode)
     
   #filter to only necessary vars
     df_vacs <- df_vacs %>% 
-      select(countryname = CountryName, vacs_coverage = Value, vacs_coverage_year = SurveyYear)
+      select(countryname = CountryName, 
+             vacs_coverage = Value, 
+             vacs_coverage_year = SurveyYear)
 
   #covert to percent
     df_vacs <- df_vacs %>% 

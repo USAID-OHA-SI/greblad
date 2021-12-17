@@ -22,7 +22,9 @@ library(janitor)
   #rename
     df_con <- df_con %>% 
       clean_names() %>% 
-      select(countryname = country_name, iso = country_code, starts_with("x"))
+      select(countryname = country_name, 
+             iso = country_code, 
+             starts_with("x"))
   
            
   #reshape
